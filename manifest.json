@@ -1,0 +1,9 @@
+{
+    "id": "focus-tab-groups",
+    "name": "Focus Tab Groups",
+    "version": "1.0.0",
+    "minAppVersion": "1.13.7",
+    "description": "Focus editor tab groups by number using configurable hotkeys.",
+    "author": "raykotarou",
+    "isDesktopOnly": false
+}
