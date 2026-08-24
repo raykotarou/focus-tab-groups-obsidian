@@ -40,7 +40,7 @@ Ctrl+2 → Focus tab group 2
 Ctrl+3 → Focus tab group 3
 ```
 
-This works wall together with sepatate shortcuts for selecting tabs inside the current group
+This works well together with separate shortcuts for selecting tabs inside the current group.
 
 For example:
 
@@ -75,7 +75,7 @@ Only groups in the main editor workspace are counted.
 
 The left and right Obsidian sidebars are ignored.
 
-When switching to a group, the plugin focuses the tab that already selected in that group.
+When switching to a group, the plugin focuses the tab that is already selected in that group.
 
 # Installation
 
@@ -87,7 +87,7 @@ The plugin is not yet available in the official Obsidian Community Plugins direc
 
 Download the following files from the latest GitHub release:
 - `main.js`
-- `mainfest.json`
+- `manifest.json`
 
 Create the following directory inside your vault:
 ```text
@@ -103,7 +103,7 @@ Copy the downloaded files into it
         └── manifest.json
 ```
 
-Restart the Obsidian
+Restart Obsidian
 
 Then open `Settings -> Community plugins` and enable **Focus Tab Groups**
 
@@ -143,3 +143,5 @@ The production build creates `main.js` in the project root
 # License
 
 Focus Tab Groups is licensed under the GNU General Public License v3.0
+
+See [LICENSE](LICENSE) for details.
