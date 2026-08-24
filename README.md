@@ -31,4 +31,4 @@ Ctrl+3 → Focus tab group 3
 
 ## License
 
-MIT
+GPLv3
