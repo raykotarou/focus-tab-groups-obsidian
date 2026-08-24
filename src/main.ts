@@ -1,7 +1,12 @@
-import { Notice, Plugin, WorkspaceLeaf } from "obsidian";
+import {
+	Notice,
+	Plugin,
+	WorkspaceLeaf,
+	WorkspaceTabs,
+} from "obsidian";
 
 interface TabGroup {
-	element: HTMLElement;
+	parent: WorkspaceTabs;
 	leaves: WorkspaceLeaf[];
 	top: number;
 	left: number;
@@ -23,40 +28,47 @@ export default class FocusTabGroupsPlugin extends Plugin {
 	/**
 	 * Returns tab groups from the main editor area.
 	 *
-	 * Sidebars are excluded because iterateRootLeaves()
-	 * only iterates leaves in the main workspace.
-	 *
 	 * Groups are ordered visually:
 	 * left-to-right, then top-to-bottom.
 	 */
 	private getOrderedGroups(): TabGroup[] {
-		const groupsByElement = new Map<HTMLElement, WorkspaceLeaf[]>();
+		const groupsByParent = new Map<
+			WorkspaceTabs,
+			WorkspaceLeaf[]
+		>();
 
 		this.app.workspace.iterateRootLeaves((leaf) => {
-			const groupElement = leaf.containerEl.closest(".workspace-tabs");
-
-			if (!(groupElement instanceof HTMLElement)) {
+			if (!(leaf.parent instanceof WorkspaceTabs)) {
 				return;
 			}
 
-			const leaves = groupsByElement.get(groupElement) ?? [];
+			const leaves =
+				groupsByParent.get(leaf.parent) ?? [];
 
 			leaves.push(leaf);
-			groupsByElement.set(groupElement, leaves);
+			groupsByParent.set(leaf.parent, leaves);
 		});
 
-		const groups = Array.from(groupsByElement.entries()).map(
-			([element, leaves]) => {
-				const rect = element.getBoundingClientRect();
+		const groups: TabGroup[] = [];
 
-				return {
-					element,
-					leaves,
-					top: rect.top,
-					left: rect.left,
-				};
-			},
-		);
+		for (const [parent, leaves] of groupsByParent) {
+			const selectedLeaf =
+				this.getSelectedLeafFromLeaves(leaves);
+
+			if (!selectedLeaf) {
+				continue;
+			}
+
+			const rect =
+				selectedLeaf.view.containerEl.getBoundingClientRect();
+
+			groups.push({
+				parent,
+				leaves,
+				top: rect.top,
+				left: rect.left,
+			});
+		}
 
 		const rowTolerance = 16;
 
@@ -72,44 +84,33 @@ export default class FocusTabGroupsPlugin extends Plugin {
 	}
 
 	/**
-	 * Finds the currently selected tab inside a tab group.
+	 * Finds the currently visible tab from a list of leaves.
 	 */
-	private getSelectedLeaf(group: TabGroup): WorkspaceLeaf | null {
-		/*
-		 * First try the leaf Obsidian marks as active.
-		 */
-		const activeLeaf = group.leaves.find((leaf) =>
-			leaf.containerEl.classList.contains("mod-active"),
+	private getSelectedLeafFromLeaves(
+		leaves: WorkspaceLeaf[],
+	): WorkspaceLeaf | null {
+		const visibleLeaf = leaves.find((leaf) =>
+			leaf.view.containerEl.isShown(),
 		);
 
-		if (activeLeaf) {
-			return activeLeaf;
-		}
+		return visibleLeaf ?? leaves[0] ?? null;
+	}
 
-		/*
-		 * For an unfocused group, find the tab whose content is currently visible.
-		 */
-		const visibleLeaf = group.leaves.find((leaf) => {
-			const element = leaf.containerEl;
-			const rect = element.getBoundingClientRect();
-			const style = window.getComputedStyle(element);
-
-			return (
-				element.isConnected &&
-				style.display !== "none" &&
-				style.visibility !== "hidden" &&
-				rect.width > 0 &&
-				rect.height > 0
-			);
-		});
-
-		return visibleLeaf ?? group.leaves[0] ?? null;
+	/**
+	 * Finds the currently selected tab inside a tab group.
+	 */
+	private getSelectedLeaf(
+		group: TabGroup,
+	): WorkspaceLeaf | null {
+		return this.getSelectedLeafFromLeaves(group.leaves);
 	}
 
 	/**
 	 * Focuses a tab group by its visual index.
 	 */
-	private async focusGroup(groupNumber: number): Promise<void> {
+	private async focusGroup(
+		groupNumber: number,
+	): Promise<void> {
 		const groups = this.getOrderedGroups();
 		const group = groups[groupNumber - 1];
 
