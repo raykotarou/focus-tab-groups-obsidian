@@ -1,0 +1,64 @@
+name: Release Obsidian plugin
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check tag version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
+
+          echo "Git tag:          $TAG"
+          echo "Manifest version: $MANIFEST_VERSION"
+
+          if [ "$TAG" != "$MANIFEST_VERSION" ]; then
+            echo "Error: Git tag does not match manifest.json version."
+            exit 1
+          fi
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Attest build provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: main.js
+
+      - name: Create GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+
+          gh release create "$TAG" \
+            --title="$TAG" \
+            --draft \
+            main.js \
+            manifest.json
