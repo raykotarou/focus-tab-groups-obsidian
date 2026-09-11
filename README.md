@@ -1,5 +1,7 @@
 # Focus Tab Groups
 
+**English** | [Русский](README.ru.md)
+
 Focus Obsidian editor tab groups by number using configurable hotkeys.
 
 The plugin adds commands for focusing editor groups directly, similar to the editor group navigation available in IDEs such as Visual Studio Code.
