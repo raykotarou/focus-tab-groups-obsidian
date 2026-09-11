@@ -81,7 +81,11 @@ When switching to a group, the plugin focuses the tab that is already selected i
 
 ## Community Plugins
 
-The plugin is not yet available in the official Obsidian Community Plugins directory
+1. Open `Settings → Community plugins` in Obsidian
+2. Select **Browse**
+3. Search for **Focus Tab Groups**
+4. Select the plugin, then select **Install**
+5. Select **Enable** after the installation is complete
 
 ## Manual installation
 
